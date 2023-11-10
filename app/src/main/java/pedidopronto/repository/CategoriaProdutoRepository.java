@@ -21,17 +21,18 @@ public class CategoriaProdutoRepository {
 
     public void save(CategoriaProduto categoriaProduto) {
         String sql = "INSERT INTO cad_categoria_produto (idProduto, categoria) VALUES (?, ?)";
+        
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, categoriaProduto);
-
-            // Converte a lista de disciplinas em formato JSON
-            Gson gson = new Gson();
-            String disciplinasJSON = gson.toJson(estudante.getList());
-
-            statement.setString(2, disciplinasJSON);
+            // Define o id do produto
+            statement.setInt(1, categoriaProduto.getId());
+    
+            // Define a categoria
+            statement.setString(2, categoriaProduto.getCategoria());
+    
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }  
+    }
+      
 }
