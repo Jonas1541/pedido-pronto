@@ -3,12 +3,40 @@
  */
 package pedidopronto;
 
+import java.util.Scanner;
+
+import pedidopronto.view.CategoriaProdutoView;
+import pedidopronto.view.ProdutoView;
+import pedidopronto.view.MetodoPagamentoView;
+import pedidopronto.view.PedidoView;
+
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        Scanner sc = new Scanner(System.in);
+        System.out.println("1 - Categoria de Produtos.");
+        System.out.println("2 - Produtos");
+        System.out.println("3 - Métodos de Pagamento");
+        System.out.println("4 - Pedidos");
+        int n = sc.nextInt();
+
+        switch (n) {
+            case 1:
+            //CategoriaProdutoView.
+            break;
+            case 2:
+            //ProdutoView.
+            break;
+            case 3:
+            //MetodoPagamentoView.
+            break;
+            case 4:
+            //PedidoView.
+            break;
+            default:
+            System.out.println("Número inválido.");
+        }
+
+        sc.close();
     }
 }
