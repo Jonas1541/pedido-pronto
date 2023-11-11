@@ -1,0 +1,3 @@
+View recebe atributos e instancia o objeto -> 
+Controller recebe o objeto e invoca repository ->
+Repository recebe o objeto e salva.
