@@ -19,7 +19,7 @@ public class ProdutoView {
     public void cadastrarProduto() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("### Cadastro de Produto ###");
+        System.out.println("### CADASTRO DE PRODUTOS ###");
 
         System.out.print("Nome do produto: ");
         String nome = scanner.nextLine();
@@ -35,7 +35,7 @@ public class ProdutoView {
         // Aqui você precisaria chamar métodos para interagir com a camada de modelo e persistência (Model e Repository)
         // Por exemplo, criar um objeto Produto e enviá-lo para o repository
 
-        Produto novoProduto = new Produto(1, nome, descricao, preco, categoriaProduto);
+        Produto novoProduto = new Produto(3, nome, descricao, preco, categoriaProduto);
 
         try {
             ProdutoController produtoController = new ProdutoController(new ProdutoRepository());

@@ -15,9 +15,9 @@ import pedidopronto.model.Produto;
 public class PedidoRepository {
 
     private static Connection getConnection() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/SQLdb";
+        String url = "jdbc:mysql://localhost:3306/PedidoProntoDB";
         String user = "root";
-        String password = "nova_senha";
+        String password = "root";
         return DriverManager.getConnection(url, user, password);
     }
 
@@ -188,5 +188,30 @@ public class PedidoRepository {
             e.printStackTrace();
         }
         return produtos;
+    }
+
+
+    public double totalValue(int idPedido) {
+        String sql = "SELECT SUM(pr.preco) AS total " +
+                     "FROM cad_pedido_produto pp " +
+                     "JOIN cad_produto pr ON pp.produto_id = pr.id " +
+                     "WHERE pp.pedido_id = ?";
+    
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(sql)) {
+    
+            statement.setInt(1, idPedido);
+    
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getDouble("total");
+                }
+            }
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    
+        return 0.0; // Retornar 0 se algo der errado
     }
 }

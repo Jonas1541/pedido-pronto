@@ -16,7 +16,7 @@ public class CategoriaProdutoView {
     public void cadastrarCategoria() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("### Cadastro de Categoria ###");
+        System.out.println("### CADASTRO DE CATEGORIA ###");
 
         System.out.print("Nome da categoria: ");
         String nomeCategoria = scanner.nextLine();
@@ -24,7 +24,7 @@ public class CategoriaProdutoView {
         // Aqui você precisaria chamar métodos para interagir com a camada de modelo e persistência (Model e Repository)
         // Por exemplo, criar um objeto CategoriaProduto e enviá-lo para o repository
 
-        CategoriaProduto novaCategoria = new CategoriaProduto(1, nomeCategoria);
+        CategoriaProduto novaCategoria = new CategoriaProduto(2, nomeCategoria);
 
         try {
             CategoriaProdutoController categoriaController = new CategoriaProdutoController(new CategoriaProdutoRepository());

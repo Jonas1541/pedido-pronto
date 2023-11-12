@@ -27,4 +27,8 @@ public class MetodoPagamentoController {
     public void deleteMetodoPagamento(int id) {
         metodoPagamentoRepository.delete(id);
     }
+
+    public MetodoPagamento findByName(String nome){
+        return metodoPagamentoRepository.findByName(nome);
+    }
 }

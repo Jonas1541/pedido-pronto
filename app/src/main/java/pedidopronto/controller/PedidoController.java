@@ -27,4 +27,8 @@ public class PedidoController {
     public void deletePedido(int id) {
         pedidoRepository.delete(id);
     }
+
+    public double totalValue(int id){
+        return pedidoRepository.totalValue(id);
+    }
 }

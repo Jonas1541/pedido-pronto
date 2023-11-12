@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import pedidopronto.model.CategoriaProduto;
 import pedidopronto.model.MetodoPagamento;
 
 public class MetodoPagamentoRepository {
@@ -95,5 +96,26 @@ public class MetodoPagamentoRepository {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public MetodoPagamento findByName(String nome) {
+        String sql = "SELECT * FROM cad_metodo_pagamento WHERE nome = ?";
+        MetodoPagamento metodoPagamento = null;
+    
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(sql)) {
+    
+            statement.setString(1, nome);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    int metodoPagamentoId = resultSet.getInt("id");
+                    String metodoPagamentoNome = resultSet.getString("nome");
+                    metodoPagamento = new MetodoPagamento(metodoPagamentoId, metodoPagamentoNome);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return metodoPagamento;
     }
 }

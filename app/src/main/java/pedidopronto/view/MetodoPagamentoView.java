@@ -16,7 +16,7 @@ public class MetodoPagamentoView {
     public void cadastrarMetodoPagamento() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("### Cadastro de Método de Pagamento ###");
+        System.out.println("### CADASTRO DE MÉTODOS DE PAGAMENTO ###");
 
         System.out.print("Nome do método de pagamento: ");
         String nomeMetodo = scanner.nextLine();
