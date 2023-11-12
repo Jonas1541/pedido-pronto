@@ -20,6 +20,13 @@ public class CategoriaProdutoController {
         return categoriaProdutoRepository.read();
     }
 
+    public CategoriaProduto findByName(String nome) {
+        return categoriaProdutoRepository.findByName(nome);
+    }
+    public CategoriaProduto findById(int id) {
+        return categoriaProdutoRepository.findById(id);
+    }
+
     public void updateCategoriaProduto(CategoriaProduto categoriaProduto) {
         categoriaProdutoRepository.update(categoriaProduto);
     }

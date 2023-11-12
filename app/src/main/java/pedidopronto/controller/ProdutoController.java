@@ -27,4 +27,8 @@ public class ProdutoController {
     public void deleteProduto(int id) {
         produtoRepository.delete(id);
     }
+
+    public Produto findById(int id){
+        return produtoRepository.findById(id);
+    }
 }

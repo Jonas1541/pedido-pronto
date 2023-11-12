@@ -13,9 +13,9 @@ import pedidopronto.model.MetodoPagamento;
 public class MetodoPagamentoRepository {
 
     private static Connection getConnection() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/SQLdb";
+        String url = "jdbc:mysql://localhost:3306/PedidoProntoDB";
         String user = "root";
-        String password = "nova_senha";
+        String password = "root";
         return DriverManager.getConnection(url, user, password);
     }
 
@@ -75,5 +75,25 @@ public class MetodoPagamentoRepository {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public MetodoPagamento findById(int id) {
+        String sql = "SELECT * FROM cad_metodo_pagamento WHERE id = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(sql)) {
+
+            statement.setInt(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    String nome = resultSet.getString("nome");
+                    return new MetodoPagamento(id, nome);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

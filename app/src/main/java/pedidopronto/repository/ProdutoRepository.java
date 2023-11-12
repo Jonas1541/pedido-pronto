@@ -8,25 +8,29 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import pedidopronto.model.Produto;
+import pedidopronto.model.CategoriaProduto;
+import pedidopronto.model.Produto; 
 
 public class ProdutoRepository {
 
+    private CategoriaProdutoRepository categoriaProdutoRepository = new CategoriaProdutoRepository();
+
     private static Connection getConnection() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/SQLdb";
+        String url = "jdbc:mysql://localhost:3306/PedidoProntoDB";
         String user = "root";
-        String password = "nova_senha";
+        String password = "root";
         return DriverManager.getConnection(url, user, password);
     }
 
     public void create(Produto produto) {
-        String sql = "INSERT INTO cad_produto (id, nome, descricao, preco) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO cad_produto (id, nome, descricao, preco, categoriaId) VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
             statement.setInt(1, produto.getId());
             statement.setString(2, produto.getNome());
             statement.setString(3, produto.getDescricao());
             statement.setDouble(4, produto.getPreco());
+            statement.setInt(5, produto.getCategoria().getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -46,7 +50,11 @@ public class ProdutoRepository {
                 String nome = resultSet.getString("nome");
                 String descricao = resultSet.getString("descricao");
                 double preco = resultSet.getDouble("preco");
-                produtos.add(new Produto(id, nome, descricao, preco));
+                int categoriaId = resultSet.getInt("categoriaId");
+
+                CategoriaProduto categoria = categoriaProdutoRepository.findById(categoriaId);
+
+                produtos.add(new Produto(id, nome, descricao, preco, categoria));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -55,7 +63,7 @@ public class ProdutoRepository {
     }
 
     public void update(Produto produto) {
-        String sql = "UPDATE cad_produto SET nome = ?, descricao = ?, preco = ? WHERE id = ?";
+        String sql = "UPDATE cad_produto SET nome = ?, descricao = ?, preco = ?, categoriaId = ? WHERE id = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement statement = conn.prepareStatement(sql)) {
@@ -63,7 +71,8 @@ public class ProdutoRepository {
             statement.setString(1, produto.getNome());
             statement.setString(2, produto.getDescricao());
             statement.setDouble(3, produto.getPreco());
-            statement.setInt(4, produto.getId());
+            statement.setInt(4, produto.getCategoria().getId());
+            statement.setInt(5, produto.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -82,4 +91,34 @@ public class ProdutoRepository {
             e.printStackTrace();
         }
     }
+
+    public Produto findById(int id) {
+        String sql = "SELECT * FROM cad_produto WHERE id = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(sql)) {
+
+            statement.setInt(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    String nome = resultSet.getString("nome");
+                    String descricao = resultSet.getString("descricao");
+                    double preco = resultSet.getDouble("preco");
+                    int categoriaId = resultSet.getInt("categoriaId");
+
+                    CategoriaProduto categoria = categoriaProdutoRepository.findById(categoriaId);
+
+                    return new Produto(id, nome, descricao, preco, categoria);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+
 }
+
