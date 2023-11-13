@@ -22,7 +22,7 @@ public class MetodoPagamentoView {
         String nomeMetodo = scanner.nextLine();
 
 
-        MetodoPagamento novoMetodoPagamento = new MetodoPagamento(2, nomeMetodo);
+        MetodoPagamento novoMetodoPagamento = new MetodoPagamento(nomeMetodo);
 
         try {
             MetodoPagamentoController metodoPagamentoController = new MetodoPagamentoController(new MetodoPagamentoRepository());

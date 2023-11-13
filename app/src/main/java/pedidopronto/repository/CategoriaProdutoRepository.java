@@ -20,11 +20,10 @@ public class CategoriaProdutoRepository {
     }
 
     public void create(CategoriaProduto categoriaProduto) {
-        String sql = "INSERT INTO cad_categoria_produto (id, categoria) VALUES (?, ?)";
+        String sql = "INSERT INTO cad_categoria_produto (categoria) VALUES (?)";
 
         try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
-            statement.setInt(1, categoriaProduto.getId());
-            statement.setString(2, categoriaProduto.getCategoria());
+            statement.setString(1, categoriaProduto.getCategoria());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

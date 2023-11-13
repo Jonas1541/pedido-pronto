@@ -11,13 +11,11 @@ public class Pedido {
 
     List<Produto> listaProdutos = new ArrayList<>();
 
-    public Pedido(int id, boolean status){
-        this.id = id;
+    public Pedido( boolean status){
         this.status = status;
     }
 
-    public Pedido(int id, boolean status, double total, MetodoPagamento metodoPagamento) {
-        this.id = id;
+    public Pedido(boolean status, double total, MetodoPagamento metodoPagamento) {
         this.status = status;
         this.total = total;
         this.metodoPagamento = metodoPagamento;

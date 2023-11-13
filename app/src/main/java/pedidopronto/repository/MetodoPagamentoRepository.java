@@ -21,11 +21,10 @@ public class MetodoPagamentoRepository {
     }
 
     public void create(MetodoPagamento metodoPagamento) {
-        String sql = "INSERT INTO cad_metodo_pagamento (id, nome) VALUES (?, ?)";
+        String sql = "INSERT INTO cad_metodo_pagamento (nome) VALUES (?)";
 
         try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
-            statement.setInt(1, metodoPagamento.getId());
-            statement.setString(2, metodoPagamento.getNome());
+            statement.setString(1, metodoPagamento.getNome());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

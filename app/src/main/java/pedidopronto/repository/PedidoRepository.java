@@ -39,18 +39,49 @@ public class PedidoRepository {
                 pedido.setId(idPedido);
 
                 // Adicionar produtos ao pedido na tabela de associação
-                String insertPedidoProdutoSql = "INSERT INTO cad_pedido_produto (idPedido, idProduto, quantidade) VALUES (?, ?, ?)";
-                for (Produto produto : pedido.getListaProdutos()) {
-                    try (PreparedStatement produtoStatement = conn.prepareStatement(insertPedidoProdutoSql)) {
-                        produtoStatement.setInt(1, idPedido);
-                        produtoStatement.setInt(2, produto.getId());
-                        produtoStatement.setInt(3, 1); // Ajuste conforme sua lógica de quantidade
-                        produtoStatement.executeUpdate();
+                String insertPedidoProdutoSql = "INSERT INTO cad_pedido_produto (idPedido, idProduto, quantidade) VALUES (?, ?, ?) "
+                        +
+                        "ON DUPLICATE KEY UPDATE quantidade = quantidade + 1";
+
+                try (PreparedStatement produtoStatement = conn.prepareStatement(insertPedidoProdutoSql)) {
+                    for (Produto produto : pedido.getListaProdutos()) {
+                        if (isPedidoProdutoExists(conn, idPedido, produto.getId())) {
+                            // Se a entrada já existe, atualizar a quantidade
+                            updateQuantidade(conn, idPedido, produto.getId());
+                        } else {
+                            // Se não existe, realizar uma nova inserção
+                            produtoStatement.setInt(1, idPedido);
+                            produtoStatement.setInt(2, produto.getId());
+                            produtoStatement.setInt(3, 1); // Ajuste conforme sua lógica de quantidade
+                            produtoStatement.executeUpdate();
+                        }
                     }
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    // Função para verificar se a associação já existe
+    private boolean isPedidoProdutoExists(Connection conn, int idPedido, int idProduto) throws SQLException {
+        String query = "SELECT * FROM cad_pedido_produto WHERE idPedido = ? AND idProduto = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setInt(1, idPedido);
+            statement.setInt(2, idProduto);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
+            }
+        }
+    }
+
+    // Função para atualizar a quantidade
+    private void updateQuantidade(Connection conn, int idPedido, int idProduto) throws SQLException {
+        String updateQuantidadeSql = "UPDATE cad_pedido_produto SET quantidade = quantidade + 1 WHERE idPedido = ? AND idProduto = ?";
+        try (PreparedStatement statement = conn.prepareStatement(updateQuantidadeSql)) {
+            statement.setInt(1, idPedido);
+            statement.setInt(2, idProduto);
+            statement.executeUpdate();
         }
     }
 
@@ -77,7 +108,7 @@ public class PedidoRepository {
 
                 // Criar uma instância de Pedido apenas para adicionar à lista (sem criar um
                 // novo objeto Pedido)
-                pedidos.add(new Pedido(id, status, total, metodoPagamento));
+                pedidos.add(new Pedido(status, total, metodoPagamento));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -181,7 +212,7 @@ public class PedidoRepository {
                     ProdutoRepository produtoRepository = new ProdutoRepository();
 
                     Produto produto = produtoRepository.findById(idProduto);
-                            produtos.add(produto);
+                    produtos.add(produto);
                 }
             }
         } catch (SQLException e) {
@@ -190,28 +221,27 @@ public class PedidoRepository {
         return produtos;
     }
 
-
     public double totalValue(int idPedido) {
         String sql = "SELECT SUM(pr.preco) AS total " +
-                     "FROM cad_pedido_produto pp " +
-                     "JOIN cad_produto pr ON pp.produto_id = pr.id " +
-                     "WHERE pp.pedido_id = ?";
-    
+                "FROM cad_pedido_produto pp " +
+                "JOIN cad_produto pr ON pp.produto_id = pr.id " +
+                "WHERE pp.pedido_id = ?";
+
         try (Connection conn = getConnection();
-             PreparedStatement statement = conn.prepareStatement(sql)) {
-    
+                PreparedStatement statement = conn.prepareStatement(sql)) {
+
             statement.setInt(1, idPedido);
-    
+
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     return resultSet.getDouble("total");
                 }
             }
-    
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    
+
         return 0.0; // Retornar 0 se algo der errado
     }
 }

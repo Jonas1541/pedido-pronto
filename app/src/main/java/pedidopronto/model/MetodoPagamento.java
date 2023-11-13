@@ -8,6 +8,9 @@ public class MetodoPagamento {
         this.id = id;
         this.nome = nome;
     }
+    public MetodoPagamento(String nome) {
+        this.nome = nome;
+    }
 
     public int getId() {
         return id;

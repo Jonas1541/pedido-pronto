@@ -24,7 +24,7 @@ public class CategoriaProdutoView {
         // Aqui você precisaria chamar métodos para interagir com a camada de modelo e persistência (Model e Repository)
         // Por exemplo, criar um objeto CategoriaProduto e enviá-lo para o repository
 
-        CategoriaProduto novaCategoria = new CategoriaProduto(2, nomeCategoria);
+        CategoriaProduto novaCategoria = new CategoriaProduto(nomeCategoria);
 
         try {
             CategoriaProdutoController categoriaController = new CategoriaProdutoController(new CategoriaProdutoRepository());

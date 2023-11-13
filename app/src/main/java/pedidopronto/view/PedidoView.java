@@ -44,7 +44,7 @@ public class PedidoView {
         exibirMenu(produtosDisponiveis);
 
         // Criar um pedido inicial
-        Pedido pedido = new Pedido(2, true);
+        Pedido pedido = new Pedido(true);
 
         do {
             System.out.print("Selecione o produto que deseja adicionar ao pedido: ");
@@ -132,7 +132,7 @@ public class PedidoView {
             metodoPagamentoController.createMetodoPagamento(metodoPagamento);
             System.out.println("Método de pagamento criado: " + metodoPagamentoNome);
         }
-
+        
         return metodoPagamento;
     }
 

@@ -23,14 +23,13 @@ public class ProdutoRepository {
     }
 
     public void create(Produto produto) {
-        String sql = "INSERT INTO cad_produto (id, nome, descricao, preco, categoriaId) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO cad_produto (nome, descricao, preco, categoriaId) VALUES ( ?, ?, ?, ?)";
 
         try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
-            statement.setInt(1, produto.getId());
-            statement.setString(2, produto.getNome());
-            statement.setString(3, produto.getDescricao());
-            statement.setDouble(4, produto.getPreco());
-            statement.setInt(5, produto.getCategoria().getId());
+            statement.setString(1, produto.getNome());
+            statement.setString(2, produto.getDescricao());
+            statement.setDouble(3, produto.getPreco());
+            statement.setInt(4, produto.getCategoria().getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
