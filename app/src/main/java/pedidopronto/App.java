@@ -20,16 +20,24 @@ public class App {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+        System.out.println("#####################################");
+        System.out.println("#####BEM VINDO AO PEDIDO PRONTO######");
+        System.out.println("#####################################");
         System.out.println("1 - Categoria de Produtos.");
         System.out.println("2 - Produtos");
         System.out.println("3 - Métodos de Pagamento");
         System.out.println("4 - Pedidos");
+        System.out.print("Selecione sua opção: ");
         int n = sc.nextInt();
         sc.nextLine(); //Limpar buffer
+        System.out.println("####################");
+        System.out.println("#####OPERAÇÕES######");
+        System.out.println("####################");
         System.out.println("1 - Criar");
         System.out.println("2 - Ver todos");
         System.out.println("3 - Editar");
         System.out.println("4 - Apagar");
+        System.out.print("Selecione sua opção: ");
         int n2 = sc.nextInt();
 
         switch (n) {
