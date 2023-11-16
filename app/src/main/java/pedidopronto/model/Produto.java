@@ -6,11 +6,21 @@ public class Produto {
     private String descricao;
     private double preco;
 
-    public Produto(int id, String nome, String descricao, double preco) {
+    private CategoriaProduto categoria;
+
+    public Produto(int id, String nome, String descricao, double preco, CategoriaProduto categoria) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
         this.preco = preco;
+        this.categoria = categoria;
+    }
+
+    public Produto(String nome, String descricao, double preco, CategoriaProduto categoria) {
+        this.nome = nome;
+        this.descricao = descricao;
+        this.preco = preco;
+        this.categoria = categoria;
     }
 
     public int getId() {
@@ -43,5 +53,13 @@ public class Produto {
 
     public void setPreco(double preco) {
         this.preco = preco;
+    }
+
+    public CategoriaProduto getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoriaProduto(CategoriaProduto categoria) {
+        this.categoria = categoria;
     }
 }

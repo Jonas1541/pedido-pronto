@@ -13,18 +13,17 @@ import pedidopronto.model.MetodoPagamento;
 public class MetodoPagamentoRepository {
 
     private static Connection getConnection() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/SQLdb";
+        String url = "jdbc:mysql://localhost:3306/PedidoProntoDB";
         String user = "root";
-        String password = "nova_senha";
+        String password = "Jon@s1541";
         return DriverManager.getConnection(url, user, password);
     }
 
     public void create(MetodoPagamento metodoPagamento) {
-        String sql = "INSERT INTO cad_metodo_pagamento (id, nome) VALUES (?, ?)";
+        String sql = "INSERT INTO cad_metodo_pagamento (nome) VALUES (?)";
 
         try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
-            statement.setInt(1, metodoPagamento.getId());
-            statement.setString(2, metodoPagamento.getNome());
+            statement.setString(1, metodoPagamento.getNome());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -75,5 +74,46 @@ public class MetodoPagamentoRepository {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public MetodoPagamento findById(int id) {
+        String sql = "SELECT * FROM cad_metodo_pagamento WHERE id = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(sql)) {
+
+            statement.setInt(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    String nome = resultSet.getString("nome");
+                    return new MetodoPagamento(id, nome);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public MetodoPagamento findByName(String nome) {
+        String sql = "SELECT * FROM cad_metodo_pagamento WHERE nome = ?";
+        MetodoPagamento metodoPagamento = null;
+    
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(sql)) {
+    
+            statement.setString(1, nome);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    int metodoPagamentoId = resultSet.getInt("id");
+                    String metodoPagamentoNome = resultSet.getString("nome");
+                    metodoPagamento = new MetodoPagamento(metodoPagamentoId, metodoPagamentoNome);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return metodoPagamento;
     }
 }

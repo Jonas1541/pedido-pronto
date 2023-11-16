@@ -9,6 +9,10 @@ public class CategoriaProduto {
         this.categoria = categoria;
     }
 
+    public CategoriaProduto(String categoria) {
+        this.categoria = categoria;
+    }
+
     public int getId() {
         return id;
     }

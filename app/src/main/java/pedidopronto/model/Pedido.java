@@ -9,7 +9,17 @@ public class Pedido {
     private double total;
     private MetodoPagamento metodoPagamento;
 
-    List<Produto> listaProdutos = new ArrayList<>();
+    List<ItemPedido> listaItensPedidos = new ArrayList<>();
+
+    public Pedido( boolean status){
+        this.status = status;
+    }
+
+    public Pedido(boolean status, double total, MetodoPagamento metodoPagamento) {
+        this.status = status;
+        this.total = total;
+        this.metodoPagamento = metodoPagamento;
+    }
 
     public Pedido(int id, boolean status, double total, MetodoPagamento metodoPagamento) {
         this.id = id;
@@ -50,11 +60,11 @@ public class Pedido {
         this.metodoPagamento = metodoPagamento;
     }
 
-    public List<Produto> getListaProdutos() {
-        return listaProdutos;
+    public List<ItemPedido> getListaItensPedidos() {
+        return listaItensPedidos;
     }
 
-    public void addProduto(Produto produto) {
-        listaProdutos.add(produto);
+    public void addItemPedido(ItemPedido ItemPedido) {
+        listaItensPedidos.add(ItemPedido);
     }
 }

@@ -13,18 +13,17 @@ import pedidopronto.model.CategoriaProduto;
 public class CategoriaProdutoRepository {
 
     private static Connection getConnection() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/SQLdb";
+        String url = "jdbc:mysql://localhost:3306/PedidoProntoDB";
         String user = "root";
-        String password = "nova_senha";
+        String password = "Jon@s1541";
         return DriverManager.getConnection(url, user, password);
     }
 
     public void create(CategoriaProduto categoriaProduto) {
-        String sql = "INSERT INTO cad_categoria_produto (idProduto, categoria) VALUES (?, ?)";
+        String sql = "INSERT INTO cad_categoria_produto (categoria) VALUES (?)";
 
         try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
-            statement.setInt(1, categoriaProduto.getId());
-            statement.setString(2, categoriaProduto.getCategoria());
+            statement.setString(1, categoriaProduto.getCategoria());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -40,7 +39,7 @@ public class CategoriaProdutoRepository {
              ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
-                int id = resultSet.getInt("idProduto");
+                int id = resultSet.getInt("id");
                 String categoria = resultSet.getString("categoria");
                 categorias.add(new CategoriaProduto(id, categoria));
             }
@@ -51,7 +50,7 @@ public class CategoriaProdutoRepository {
     }
 
     public void update(CategoriaProduto categoriaProduto) {
-        String sql = "UPDATE cad_categoria_produto SET categoria = ? WHERE idProduto = ?";
+        String sql = "UPDATE cad_categoria_produto SET categoria = ? WHERE id = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement statement = conn.prepareStatement(sql)) {
@@ -65,7 +64,7 @@ public class CategoriaProdutoRepository {
     }
 
     public void delete(int id) {
-        String sql = "DELETE FROM cad_categoria_produto WHERE idProduto = ?";
+        String sql = "DELETE FROM cad_categoria_produto WHERE id = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement statement = conn.prepareStatement(sql)) {
@@ -76,4 +75,48 @@ public class CategoriaProdutoRepository {
             e.printStackTrace();
         }
     }
+
+
+    public CategoriaProduto findById(int id) {
+        String sql = "SELECT * FROM cad_categoria_produto WHERE id = ?";
+        CategoriaProduto categoria = null;
+    
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(sql)) {
+    
+            statement.setInt(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    int categoriaId = resultSet.getInt("id");
+                    String nomeCategoria = resultSet.getString("categoria");
+                    categoria = new CategoriaProduto(categoriaId, nomeCategoria);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return categoria;
+    }
+
+    public CategoriaProduto findByName(String nome) {
+        String sql = "SELECT * FROM cad_categoria_produto WHERE categoria = ?";
+        CategoriaProduto categoria = null;
+    
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(sql)) {
+    
+            statement.setString(1, nome);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    int categoriaId = resultSet.getInt("id");
+                    String nomeCategoria = resultSet.getString("categoria");
+                    categoria = new CategoriaProduto(categoriaId, nomeCategoria);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return categoria;
+    }
 }
+

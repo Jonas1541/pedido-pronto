@@ -27,4 +27,9 @@ public class PedidoController {
     public void deletePedido(int id) {
         pedidoRepository.delete(id);
     }
+
+    public Pedido findById(int id) {
+        return pedidoRepository.findById(id);
+    }
+    
 }
