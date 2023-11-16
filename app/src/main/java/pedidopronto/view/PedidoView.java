@@ -126,9 +126,15 @@ public class PedidoView {
         List<Pedido> pedidos = pedidoController.readPedido();
         for (Pedido pedido : pedidos) {
             System.out.println("Pedido ID: " + pedido.getId() + " - Total: R$" + pedido.getTotal());
-            // Outros detalhes do pedido podem ser exibidos aqui
+            System.out.println("Produtos no Pedido:");
+            for (ItemPedido item : pedido.getListaItensPedidos()) {
+                System.out.println("\tProduto: " + item.getProduto().getNome() + " - Quantidade: " + item.getQuantidade());
+            }
+            System.out.println("Método de Pagamento: " + pedido.getMetodoPagamento().getNome());
+            System.out.println("-------");
         }
     }
+    
 
     public void editarPedido() {
         try (Scanner scanner = new Scanner(System.in)) {
@@ -187,6 +193,7 @@ public class PedidoView {
             // Atualizar o total do pedido e salvar as alterações
             pedido.setTotal(calcularTotalPedido(pedido));
             pedidoController.updatePedido(pedido);
+            System.out.println("Total do Pedido: R$" + pedido.getTotal());
             System.out.println("Pedido atualizado com sucesso!");
         }
     }

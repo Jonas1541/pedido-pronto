@@ -25,20 +25,21 @@ public class PedidoRepository {
 
     public void create(Pedido pedido) {
         String insertPedidoSql = "INSERT INTO cad_pedido (status, total, metodoPagamentoId) VALUES (?, ?, ?)";
-    
+
         try (Connection conn = getConnection();
-             PreparedStatement statement = conn.prepareStatement(insertPedidoSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-    
+                PreparedStatement statement = conn.prepareStatement(insertPedidoSql,
+                        PreparedStatement.RETURN_GENERATED_KEYS)) {
+
             statement.setBoolean(1, pedido.isStatus());
             statement.setDouble(2, pedido.getTotal());
             statement.setInt(3, pedido.getMetodoPagamento().getId());
             statement.executeUpdate();
-    
+
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     int idPedido = generatedKeys.getInt(1);
                     pedido.setId(idPedido);
-    
+
                     // Agora insira os produtos associados ao pedido
                     String insertPedidoProdutoSql = "INSERT INTO cad_pedido_produto (idPedido, idProduto, quantidade) VALUES (?, ?, ?)";
                     try (PreparedStatement produtoStatement = conn.prepareStatement(insertPedidoProdutoSql)) {
@@ -57,32 +58,33 @@ public class PedidoRepository {
             e.printStackTrace();
         }
     }
-    
 
     public List<Pedido> read() {
         String sql = "SELECT * FROM cad_pedido";
         List<Pedido> pedidos = new ArrayList<>();
-
+    
         try (Connection conn = getConnection();
-                PreparedStatement statement = conn.prepareStatement(sql);
-                ResultSet resultSet = statement.executeQuery()) {
-
+             PreparedStatement statement = conn.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+    
             MetodoPagamentoRepository metodoPagamentoRepo = new MetodoPagamentoRepository();
-
+    
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 boolean status = resultSet.getBoolean("status");
                 double total = resultSet.getDouble("total");
                 int metodoPagamentoId = resultSet.getInt("metodoPagamentoId");
-
+    
                 MetodoPagamento metodoPagamento = metodoPagamentoRepo.findById(metodoPagamentoId);
-
+    
                 Pedido pedido = new Pedido(id, status, total, metodoPagamento);
+    
+                // Adicionar itens do pedido
                 List<ItemPedido> itensPedido = buscarProdutosPorPedido(id);
                 for (ItemPedido item : itensPedido) {
                     pedido.addItemPedido(item);
                 }
-
+    
                 pedidos.add(pedido);
             }
         } catch (SQLException e) {
@@ -90,6 +92,7 @@ public class PedidoRepository {
         }
         return pedidos;
     }
+    
 
     private List<ItemPedido> buscarProdutosPorPedido(int idPedido) {
         List<ItemPedido> itensPedido = new ArrayList<>();
