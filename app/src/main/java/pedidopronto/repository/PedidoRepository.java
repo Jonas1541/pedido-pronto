@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import pedidopronto.model.CategoriaProduto;
+import pedidopronto.model.ItemPedido;
 import pedidopronto.model.MetodoPagamento;
 import pedidopronto.model.Pedido;
 import pedidopronto.model.Produto;
@@ -17,81 +19,34 @@ public class PedidoRepository {
     private static Connection getConnection() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/PedidoProntoDB";
         String user = "root";
-        String password = "root";
+        String password = "nova_senha";
         return DriverManager.getConnection(url, user, password);
     }
 
     public void create(Pedido pedido) {
-        String insertPedidoSql = "INSERT INTO cad_pedido (status, total, metodoPagamentoId) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO cad_pedido (status, total, metodoPagamentoId) VALUES (?, ?, ?)";
 
-        try (Connection conn = getConnection();
-                PreparedStatement statement = conn.prepareStatement(insertPedidoSql,
-                        PreparedStatement.RETURN_GENERATED_KEYS)) {
-
+        try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
             statement.setBoolean(1, pedido.isStatus());
             statement.setDouble(2, pedido.getTotal());
             statement.setInt(3, pedido.getMetodoPagamento().getId());
             statement.executeUpdate();
-
-            ResultSet generatedKeys = statement.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                int idPedido = generatedKeys.getInt(1);
-                pedido.setId(idPedido);
-
-                // Adicionar produtos ao pedido na tabela de associação
-                String insertPedidoProdutoSql = "INSERT INTO cad_pedido_produto (idPedido, idProduto, quantidade) VALUES (?, ?, ?) "
-                        +
-                        "ON DUPLICATE KEY UPDATE quantidade = quantidade + 1";
-
-                try (PreparedStatement produtoStatement = conn.prepareStatement(insertPedidoProdutoSql)) {
-                    for (Produto produto : pedido.getListaProdutos()) {
-                        if (isPedidoProdutoExists(conn, idPedido, produto.getId())) {
-                            // Se a entrada já existe, atualizar a quantidade
-                            updateQuantidade(conn, idPedido, produto.getId());
-                        } else {
-                            // Se não existe, realizar uma nova inserção
-                            produtoStatement.setInt(1, idPedido);
-                            produtoStatement.setInt(2, produto.getId());
-                            produtoStatement.setInt(3, 1); // Ajuste conforme sua lógica de quantidade
-                            produtoStatement.executeUpdate();
-                        }
-                    }
-                }
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
 
-    // Função para verificar se a associação já existe
-    private boolean isPedidoProdutoExists(Connection conn, int idPedido, int idProduto) throws SQLException {
-        String query = "SELECT * FROM cad_pedido_produto WHERE idPedido = ? AND idProduto = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
-            statement.setInt(1, idPedido);
-            statement.setInt(2, idProduto);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                return resultSet.next();
-            }
-        }
-    }
-
-    // Função para atualizar a quantidade
-    private void updateQuantidade(Connection conn, int idPedido, int idProduto) throws SQLException {
-        String updateQuantidadeSql = "UPDATE cad_pedido_produto SET quantidade = quantidade + 1 WHERE idPedido = ? AND idProduto = ?";
-        try (PreparedStatement statement = conn.prepareStatement(updateQuantidadeSql)) {
-            statement.setInt(1, idPedido);
-            statement.setInt(2, idProduto);
-            statement.executeUpdate();
-        }
+        // Adicionar produtos ao pedido em uma tabela de associação, se necessário
     }
 
     public List<Pedido> read() {
-        String selectPedidoSql = "SELECT * FROM cad_pedido";
+        String sql = "SELECT * FROM cad_pedido";
         List<Pedido> pedidos = new ArrayList<>();
 
         try (Connection conn = getConnection();
-                PreparedStatement statement = conn.prepareStatement(selectPedidoSql);
+                PreparedStatement statement = conn.prepareStatement(sql);
                 ResultSet resultSet = statement.executeQuery()) {
+
+            MetodoPagamentoRepository metodoPagamentoRepo = new MetodoPagamentoRepository();
 
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
@@ -99,16 +54,15 @@ public class PedidoRepository {
                 double total = resultSet.getDouble("total");
                 int metodoPagamentoId = resultSet.getInt("metodoPagamentoId");
 
-                // Buscar MetodoPagamento pelo ID
-                MetodoPagamentoRepository metodoPagamentoRepository = new MetodoPagamentoRepository();
-                MetodoPagamento metodoPagamento = metodoPagamentoRepository.findById(metodoPagamentoId);
+                MetodoPagamento metodoPagamento = metodoPagamentoRepo.findById(metodoPagamentoId);
 
-                // Buscar produtos associados ao pedido
-                List<Produto> produtos = buscarProdutosPorPedido(id);
+                Pedido pedido = new Pedido(id, status, total, metodoPagamento);
+                List<ItemPedido> itensPedido = buscarProdutosPorPedido(id);
+                for (ItemPedido item : itensPedido) {
+                    pedido.addItemPedido(item);
+                }
 
-                // Criar uma instância de Pedido apenas para adicionar à lista (sem criar um
-                // novo objeto Pedido)
-                pedidos.add(new Pedido(status, total, metodoPagamento));
+                pedidos.add(pedido);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -116,87 +70,11 @@ public class PedidoRepository {
         return pedidos;
     }
 
-    public void update(Pedido pedido) {
-        String updatePedidoSql = "UPDATE cad_pedido SET status = ?, total = ?, metodoPagamentoId = ? WHERE id = ?";
-
-        try (Connection conn = getConnection();
-                PreparedStatement statement = conn.prepareStatement(updatePedidoSql)) {
-
-            statement.setBoolean(1, pedido.isStatus());
-            statement.setDouble(2, pedido.getTotal());
-            statement.setInt(3, pedido.getMetodoPagamento().getId());
-            statement.setInt(4, pedido.getId());
-            statement.executeUpdate();
-
-            // Atualizar lista de produtos do pedido na tabela de associação, se necessário
-            String deleteProdutosSql = "DELETE FROM cad_pedido_produto WHERE idPedido = ?";
-            try (PreparedStatement deleteStatement = conn.prepareStatement(deleteProdutosSql)) {
-                deleteStatement.setInt(1, pedido.getId());
-                deleteStatement.executeUpdate();
-            }
-
-            String insertProdutosSql = "INSERT INTO cad_pedido_produto (idPedido, idProduto, quantidade) VALUES (?, ?, ?)";
-            for (Produto produto : pedido.getListaProdutos()) {
-                try (PreparedStatement insertStatement = conn.prepareStatement(insertProdutosSql)) {
-                    insertStatement.setInt(1, pedido.getId());
-                    insertStatement.setInt(2, produto.getId());
-                    insertStatement.setInt(3, 1); // Ajuste conforme sua lógica de quantidade
-                    insertStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void delete(int id) {
-        String deletePedidoSql = "DELETE FROM cad_pedido WHERE id = ?";
-
-        try (Connection conn = getConnection();
-                PreparedStatement statement = conn.prepareStatement(deletePedidoSql)) {
-
-            // Remover entradas relacionadas na tabela de associação de produtos
-            String deleteProdutosSql = "DELETE FROM cad_pedido_produto WHERE idPedido = ?";
-            try (PreparedStatement deleteStatement = conn.prepareStatement(deleteProdutosSql)) {
-                deleteStatement.setInt(1, id);
-                deleteStatement.executeUpdate();
-            }
-
-            // Deletar o pedido
-            statement.setInt(1, id);
-            statement.executeUpdate();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public MetodoPagamento findByName(String nome) {
-        String sql = "SELECT * FROM cad_metodo_pagamento WHERE nome = ?";
-
-        try (Connection conn = getConnection();
-                PreparedStatement statement = conn.prepareStatement(sql)) {
-
-            statement.setString(1, nome);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    // Outros campos, se necessário
-
-                    return new MetodoPagamento(id, nome);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public List<Produto> buscarProdutosPorPedido(int idPedido) {
-        String sql = "SELECT * FROM cad_produto_pedido WHERE idPedido = ?";
-
-        List<Produto> produtos = new ArrayList<>();
+    private List<ItemPedido> buscarProdutosPorPedido(int idPedido) {
+        List<ItemPedido> itensPedido = new ArrayList<>();
+        String sql = "SELECT p.*, pp.quantidade FROM cad_produto AS p " +
+                "JOIN cad_pedido_produto AS pp ON p.id = pp.idProduto " +
+                "WHERE pp.idPedido = ?";
 
         try (Connection conn = getConnection();
                 PreparedStatement statement = conn.prepareStatement(sql)) {
@@ -205,43 +83,92 @@ public class PedidoRepository {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    int idProduto = resultSet.getInt("idProduto");
-                    // Outros campos, se necessário
+                    int id = resultSet.getInt("id");
+                    String nome = resultSet.getString("nome");
+                    String descricao = resultSet.getString("descricao");
+                    double preco = resultSet.getDouble("preco");
+                    int categoriaId = resultSet.getInt("categoriaId");
+                    int quantidade = resultSet.getInt("quantidade");
 
-                    // Aqui você precisaria buscar o produto pelo ID
-                    ProdutoRepository produtoRepository = new ProdutoRepository();
+                    CategoriaProdutoRepository categoriaRepo = new CategoriaProdutoRepository();
+                    CategoriaProduto categoria = categoriaRepo.findById(categoriaId);
 
-                    Produto produto = produtoRepository.findById(idProduto);
-                    produtos.add(produto);
+                    Produto produto = new Produto(id, nome, descricao, preco, categoria);
+                    ItemPedido itemPedido = new ItemPedido(produto, quantidade);
+
+                    itensPedido.add(itemPedido);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return produtos;
+        return itensPedido;
     }
 
-    public double totalValue(int idPedido) {
-        String sql = "SELECT SUM(pr.preco) AS total " +
-                "FROM cad_pedido_produto pp " +
-                "JOIN cad_produto pr ON pp.produto_id = pr.id " +
-                "WHERE pp.pedido_id = ?";
+    public void update(Pedido pedido) {
+        String sql = "UPDATE cad_pedido SET status = ?, total = ?, metodoPagamentoId = ? WHERE id = ?";
 
         try (Connection conn = getConnection();
                 PreparedStatement statement = conn.prepareStatement(sql)) {
 
-            statement.setInt(1, idPedido);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getDouble("total");
-                }
-            }
-
+            statement.setBoolean(1, pedido.isStatus());
+            statement.setDouble(2, pedido.getTotal());
+            statement.setInt(3, pedido.getMetodoPagamento().getId());
+            statement.setInt(4, pedido.getId());
+            statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return 0.0; // Retornar 0 se algo der errado
+        // Atualizar lista de produtos do pedido, se necessário
+    }
+
+    public void delete(int id) {
+        String sql = "DELETE FROM cad_pedido WHERE id = ?";
+
+        try (Connection conn = getConnection();
+                PreparedStatement statement = conn.prepareStatement(sql)) {
+
+            statement.setInt(1, id);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Remover entradas relacionadas na tabela de associação de produtos, se
+        // necessário
+    }
+
+    public Pedido findById(int id) {
+        String sql = "SELECT * FROM cad_pedido WHERE id = ?";
+        Pedido pedido = null;
+    
+        try (Connection conn = getConnection();
+             PreparedStatement statement = conn.prepareStatement(sql)) {
+    
+            statement.setInt(1, id);
+            ResultSet resultSet = statement.executeQuery();
+    
+            if (resultSet.next()) {
+                boolean status = resultSet.getBoolean("status");
+                double total = resultSet.getDouble("total");
+                int metodoPagamentoId = resultSet.getInt("metodoPagamentoId");
+    
+                MetodoPagamentoRepository metodoPagamentoRepo = new MetodoPagamentoRepository();
+                MetodoPagamento metodoPagamento = metodoPagamentoRepo.findById(metodoPagamentoId);
+    
+                pedido = new Pedido(id, status, total, metodoPagamento);
+    
+                // Adicionar itens do pedido
+                List<ItemPedido> itensPedido = buscarProdutosPorPedido(id);
+                for (ItemPedido item : itensPedido) {
+                    pedido.addItemPedido(item);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    
+        return pedido;
     }
 }

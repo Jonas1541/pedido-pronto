@@ -1,5 +1,6 @@
 package pedidopronto.view;
 
+import java.util.List;
 import java.util.Scanner;
 
 import pedidopronto.controller.CategoriaProdutoController;
@@ -11,66 +12,86 @@ import pedidopronto.repository.ProdutoRepository;
 
 public class ProdutoView {
 
-    public static void main(String[] args) {
-        ProdutoView produtoView = new ProdutoView();
-        produtoView.cadastrarProduto();
+    private ProdutoController produtoController;
+    private CategoriaProdutoController categoriaProdutoController;
+
+    public ProdutoView() {
+        produtoController = new ProdutoController(new ProdutoRepository());
+        categoriaProdutoController = new CategoriaProdutoController(new CategoriaProdutoRepository());
     }
 
     public void cadastrarProduto() {
-        Scanner scanner = new Scanner(System.in);
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("### CADASTRO DE PRODUTOS ###");
+            System.out.print("Nome do produto: ");
+            String nome = scanner.nextLine();
+            System.out.print("Descrição do produto: ");
+            String descricao = scanner.nextLine();
+            System.out.print("Preço do produto: ");
+            double preco = scanner.nextDouble();
+            scanner.nextLine(); // Limpar buffer
 
-        System.out.println("### CADASTRO DE PRODUTOS ###");
+            CategoriaProduto categoriaProduto = selecionarOuCriarCategoria(scanner);
 
-        System.out.print("Nome do produto: ");
-        String nome = scanner.nextLine();
-
-        System.out.print("Descrição do produto: ");
-        String descricao = scanner.nextLine();
-
-        System.out.print("Preço do produto: ");
-        double preco = scanner.nextDouble();
-
-        CategoriaProduto categoriaProduto = selecionarOuCriarCategoria();
-
-        // Aqui você precisaria chamar métodos para interagir com a camada de modelo e persistência (Model e Repository)
-        // Por exemplo, criar um objeto Produto e enviá-lo para o repository
-
-        Produto novoProduto = new Produto(nome, descricao, preco, categoriaProduto);
-
-        try {
-            ProdutoController produtoController = new ProdutoController(new ProdutoRepository());
+            Produto novoProduto = new Produto(nome, descricao, preco, categoriaProduto);
             produtoController.createProduto(novoProduto);
             System.out.println("Produto cadastrado com sucesso!");
-        } catch (Exception e) {
-            System.out.println("ERRO DETECTADO>>>>>>>: " + e);
         }
     }
 
-    private CategoriaProduto selecionarOuCriarCategoria() {
-        Scanner scanner = new Scanner(System.in);
+    public void lerProduto() {
+        System.out.println("### LISTA DE PRODUTOS ###");
+        List<Produto> produtos = produtoController.readProduto();
+        produtos.forEach(produto -> System.out.println(produto.getId() + " - " + produto.getNome() + " - " + produto.getPreco()));
+    }
 
+    public void editarProduto() {
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("### EDITAR PRODUTO ###");
+            System.out.print("ID do produto para editar: ");
+            int id = scanner.nextInt();
+            scanner.nextLine(); // Limpar buffer
+            System.out.print("Nome do produto: ");
+            String nome = scanner.nextLine();
+            System.out.print("Descrição do produto: ");
+            String descricao = scanner.nextLine();
+            System.out.print("Preço do produto: ");
+            double preco = scanner.nextDouble();
+            scanner.nextLine(); // Limpar buffer
+
+            CategoriaProduto categoriaProduto = selecionarOuCriarCategoria(scanner);
+
+            Produto produto = new Produto(id, nome, descricao, preco, categoriaProduto);
+            produtoController.updateProduto(produto);
+            System.out.println("Produto atualizado com sucesso!");
+        }
+    }
+
+    public void deletarProduto() {
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("### DELETAR PRODUTO ###");
+            System.out.print("ID do produto para deletar: ");
+            int id = scanner.nextInt();
+
+            produtoController.deleteProduto(id);
+            System.out.println("Produto deletado com sucesso!");
+        }
+    }
+
+    private CategoriaProduto selecionarOuCriarCategoria(Scanner scanner) {
         System.out.print("Categoria do Produto: ");
         String categoriaNome = scanner.next();
 
-        CategoriaProdutoController categoriaController = new CategoriaProdutoController(new CategoriaProdutoRepository());
-
-        CategoriaProduto categoriaProduto = categoriaController.findByName(categoriaNome);
+        CategoriaProduto categoriaProduto = categoriaProdutoController.findByName(categoriaNome);
 
         if (categoriaProduto == null) {
-            // Se a categoria não existir, ofereça a opção de criar uma nova categoria
             System.out.println("Categoria não encontrada. Deseja criar uma nova categoria? (S/N)");
-
             if (scanner.next().equalsIgnoreCase("S")) {
                 CategoriaProdutoView categoriaView = new CategoriaProdutoView();
                 categoriaView.cadastrarCategoria();
-                // Após cadastrar a nova categoria, recupere a instância da categoria criada
-                categoriaProduto = categoriaController.findByName(categoriaNome);
-            } else {
-                // Lógica para lidar com a situação em que o usuário decide não criar uma nova categoria
-                // Pode ser uma exceção, uma mensagem de erro, etc.
+                categoriaProduto = categoriaProdutoController.findByName(categoriaNome);
             }
         }
-
         return categoriaProduto;
     }
 }

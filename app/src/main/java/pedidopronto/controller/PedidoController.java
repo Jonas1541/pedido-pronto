@@ -28,7 +28,8 @@ public class PedidoController {
         pedidoRepository.delete(id);
     }
 
-    public double totalValue(int id){
-        return pedidoRepository.totalValue(id);
+    public Pedido findById(int id) {
+        return pedidoRepository.findById(id);
     }
+    
 }

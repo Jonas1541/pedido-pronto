@@ -5,6 +5,12 @@ package pedidopronto;
 
 import java.util.Scanner;
 
+import pedidopronto.controller.MetodoPagamentoController;
+import pedidopronto.controller.PedidoController;
+import pedidopronto.controller.ProdutoController;
+import pedidopronto.repository.MetodoPagamentoRepository;
+import pedidopronto.repository.PedidoRepository;
+import pedidopronto.repository.ProdutoRepository;
 import pedidopronto.view.CategoriaProdutoView;
 import pedidopronto.view.ProdutoView;
 import pedidopronto.view.MetodoPagamentoView;
@@ -19,22 +25,68 @@ public class App {
         System.out.println("3 - Métodos de Pagamento");
         System.out.println("4 - Pedidos");
         int n = sc.nextInt();
+        sc.nextLine(); //Limpar buffer
+        System.out.println("1 - Criar");
+        System.out.println("2 - Ver todos");
+        System.out.println("3 - Editar");
+        System.out.println("4 - Apagar");
+        int n2 = sc.nextInt();
 
         switch (n) {
             case 1:
-            //CategoriaProdutoView.
-            break;
+            CategoriaProdutoView categoriaProdutoView = new CategoriaProdutoView();
+                if(n2 == 1){
+                    categoriaProdutoView.cadastrarCategoria();
+                } else if(n2 == 2){
+                    categoriaProdutoView.lerCategoria();
+                } else if(n2 == 3){
+                    categoriaProdutoView.editarCategoria();
+                } else if(n2 == 4){
+                    categoriaProdutoView.deletarCategoria();
+                }
+                break;
             case 2:
-            //ProdutoView.
-            break;
+                ProdutoView produtoView = new ProdutoView();
+                if(n2 == 1){
+                    produtoView.cadastrarProduto();
+                } else if(n2 == 2){
+                    produtoView.lerProduto();
+                } else if(n2 == 3){
+                    produtoView.editarProduto();
+                } else if(n2 == 4){
+                    produtoView.deletarProduto();
+                }
+                break;
             case 3:
-            //MetodoPagamentoView.
-            break;
+                MetodoPagamentoView metodoPagamentoView = new MetodoPagamentoView();
+                if(n2 == 1){
+                    metodoPagamentoView.cadastrarMetodoPagamento();
+                } else if(n2 == 2){
+                    metodoPagamentoView.lerMetodoPagamento();
+                } else if(n2 == 3){
+                    metodoPagamentoView.editarMetodoPagamento();
+                } else if(n2 == 4){
+                    metodoPagamentoView.deletarMetodoPagamento();
+                }
+                break;
             case 4:
-            //PedidoView.
-            break;
+                PedidoView pedidoView = new PedidoView(
+                    new PedidoController(new PedidoRepository()),
+                    new ProdutoController(new ProdutoRepository()),
+                    new MetodoPagamentoController(new MetodoPagamentoRepository())
+                );
+                if(n2 == 1){
+                    pedidoView.criarPedido();
+                } else if(n2 == 2){
+                    pedidoView.lerPedidos();
+                } else if(n2 == 3){
+                    pedidoView.editarPedido();
+                } else if(n2 == 4){
+                    pedidoView.deletarPedido();
+                }
+                break;
             default:
-            System.out.println("Número inválido.");
+                System.out.println("Número inválido.");
         }
 
         sc.close();

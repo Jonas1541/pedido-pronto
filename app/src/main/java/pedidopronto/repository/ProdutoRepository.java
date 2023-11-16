@@ -18,7 +18,7 @@ public class ProdutoRepository {
     private static Connection getConnection() throws SQLException {
         String url = "jdbc:mysql://localhost:3306/PedidoProntoDB";
         String user = "root";
-        String password = "root";
+        String password = "nova_senha";
         return DriverManager.getConnection(url, user, password);
     }
 
